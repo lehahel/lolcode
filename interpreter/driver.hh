@@ -6,6 +6,7 @@
 #include "lolobject.h"
 #include "scanner.h"
 #include "parser.hh"
+#include "loldriver.h"
 
 
 class Driver {
@@ -29,5 +30,6 @@ public:
    yy::parser parser;
    
 private:
+   CDriver loldriver;
    std::ifstream stream;
 };

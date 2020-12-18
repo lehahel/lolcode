@@ -2,10 +2,13 @@
 #include "parser.hh"
 
 
-Driver::Driver() :
+Driver::Driver() 
+ : scanner(*this),
     trace_parsing(false),
     trace_scanning(false),
-    scanner(*this), parser(scanner, *this) {
+    loldriver(),
+    parser(scanner, loldriver) {
+    CDriver driver1();
     // pre defined vars
     variables["one"] = LolObject(1);
     variables["two"] = LolObject(2);

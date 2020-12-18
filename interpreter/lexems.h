@@ -28,9 +28,9 @@ public:
 
 class CCodeblockManager {
 public:
-    CCodeblockManager();
+    CCodeblockManager() = default;
     CCodeblockManager(const CVariablesManager &vars);
-    void add_block(const CCodeBlock &block);
+    void add_block(CCodeBlock &block);
     void exec();
     LolObject get_var(const std::string &name);
     void set_var(const std::string &name, LolObject object);
@@ -45,19 +45,22 @@ private:
 enum class ExprType {
     TERMINAL, VARIABLE,
     ADD, SUB, MUL, DIV, MOD,
-    AND, OR
+    AND, OR, ASSIGNMENT
 };
 
 class CExpression : public CCodeBlock {
 public:
-    CExpression(LolObject object);
-    CExpression(const std::string &varname);
+    CExpression() = default;
+    CExpression(LolObject object, const CVariablesManager &vars);
+    CExpression(const std::string &varname, const CVariablesManager &vars);
     CExpression(ExprType type,
                 CExpression *left,
-                CExpression *right
+                CExpression *right,
+                const CVariablesManager &vars
                 );
     ~CExpression();
     void exec() override;
+    LolObject get_val();
 
 private:
     LolObject eval();
@@ -66,19 +69,7 @@ private:
     ExprType    type;
     CExpression *left;
     CExpression *right;    
-};
-
-////////////////////////////////////////////////////////////////////////////
-
-class CAssignment : CCodeBlock {
-public:
-    CAssignment() = delete;
-    CAssignment(LolObject lval, CExpression rval);
-    void exec() override;
-
-private:
-    LolObject lval;
-    CExpression rval;
+    CVariablesManager variables;
 };
 
 ////////////////////////////////////////////////////////////////////////////
@@ -90,11 +81,13 @@ public:
              CCodeblockManager &true_code,
              CCodeblockManager &false_code,
              const CVariablesManager &vars);
+    void exec() override;
 
 private:
     CExpression statement;
     CCodeblockManager true_manager;
     CCodeblockManager false_manager;
+    CVariablesManager variables;
 };
 
 ////////////////////////////////////////////////////////////////////////////
@@ -107,15 +100,21 @@ public:
     CLoopBlock() = delete;
     CLoopBlock(const std::string &block_name,
                LoopOperator op,
+               LoopType tp,
+               std::string varname,
                CExpression expr,
                CCodeblockManager &code,
                const CVariablesManager &vars);
+    void exec() override;
 
 private:
+    std::string name;
+    std::string var;
     CExpression statement;
     CCodeblockManager manager;
     LoopOperator oper;
     LoopType type;
+    CVariablesManager variables;
 };
 
 ////////////////////////////////////////////////////////////////////////////

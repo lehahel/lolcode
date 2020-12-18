@@ -8,10 +8,11 @@
 
 %code requires {
     #include "lolobject.h"
-    #include "tree.h"
+    #include "lexems.h"
+    #include "loldriver.h"
     #include <string>
     class Scanner;
-    class Driver;
+    class CDriver;
 }
 
 // %param { Scanner &scn }
@@ -26,15 +27,16 @@
     #include "driver.hh"
     #include "location.hh"
 
-    static yy::parser::symbol_type yylex(Scanner &scanner, Driver& driver) {
+    static yy::parser::symbol_type yylex(Scanner &scanner, CDriver& driver) {
         return scanner.ScanToken();
     }
+    CVariablesManager globals;
 }
 
 %lex-param   { Scanner &scanner }
-%lex-param   { CDriver  &driver  }
+%lex-param   { CDriver &driver  }
 %parse-param { Scanner &scanner }
-%parse-param { CDriver  &driver  }
+%parse-param { CDriver &driver  }
 
 %locations
 
@@ -75,9 +77,10 @@
 %token <bool>        BOOL
 %token /*         */ EOL
 
-%nterm <LolObject> exp
-%nterm <LolObject> factor
-%nterm <LolObject> term
+%nterm <LolObject> object
+%nterm <CExpression *> exp
+%nterm <CExpression *> factor
+%nterm <CExpression *> term
 
 %printer { yyo << $$; } <*>;
 
@@ -92,20 +95,18 @@ object:
   | BOOL       { $$ = LolObject($1); }
   ;
 
-program: BEGIN codeblock ENDING {
-    driver.initialize( $2 );
-};
+program: BEGIN codeblock ENDING {};
 
 
 exp: factor
- | PLUS    exp      exp     { $$ = new CExpression(ExprType::ADD, $2, $3); }
- | MINUS   exp      factor  { $$ = new CExpression(ExprType::SUB, $2, $3); }
+ | PLUS    exp      exp     { $$ = new CExpression(ExprType::ADD, $2, $3, globals); }
+ | MINUS   exp      factor  { $$ = new CExpression(ExprType::SUB, $2, $3, globals); }
  ;
 
 
 codeblock: 
-   %empty                   { /* TODO */ }
- | codeblock exp            { /* TODO */ }
+   %empty                   {            }
+ | codeblock exp            {/*driver.add_block(yylineno, $2);*/}
  | codeblock if_flow        { /* TODO */ }
  | codeblock while_flow     { /* TODO */ }
  | codeblock till_flow      { /* TODO */ }
@@ -113,17 +114,17 @@ codeblock:
 
 
 factor:    
-   term                     { $$ = new CExpression($1); }
- | STAR    factor   term    { $$ = new CExpression(ExprType::MUL, $2, $3); }
- | SLASH   factor   term    { $$ = new CExpression(ExprType::DIV, $2, $3); }
- | MOD     factor   tern    { $$ = new CExpression(ExprType::MOD, $2, $3); }
- | AND     factor   term    { $$ = new CExpression(ExprType::AND, $2, $3); }
- | OR      factor   term    { $$ = new CExpression(ExprType::OR , $2, $3); }
+   term                     { $$ = $1; }
+ | STAR    factor   term    { $$ = new CExpression(ExprType::MUL, $2, $3, globals); }
+ | SLASH   factor   term    { $$ = new CExpression(ExprType::DIV, $2, $3, globals); }
+ | MOD     factor   term    { $$ = new CExpression(ExprType::MOD, $2, $3, globals); }
+ | AND     factor   term    { $$ = new CExpression(ExprType::AND, $2, $3, globals); }
+ | OR      factor   term    { $$ = new CExpression(ExprType::OR , $2, $3, globals); }
  ;
 
 
 term: 
-   OBJECT
+   object                   { $$ = new CExpression($1, globals); }
  | LPAREN  exp      RPAREN  { $$ = $2; }
  ;
 
@@ -144,16 +145,14 @@ exp IF DO codeblock ELSE codeblock ENDIF {
 
 
 while_flow:
-LOOP "identifier" UPPIN  YR "identifier" WHILE exp {
-
-}
-  | LOOP "identifier" NERFIN YR "identifier" WHILE exp {
+LOOP "identifier" INC YR "identifier" WHILE exp {}
+  | LOOP "identifier" DEC YR "identifier" WHILE exp {
     // pass
 };
 
 
-till_flow:  LOOP "identifier" UPPIN  YR "identifier" TILL exp
-           | LOOP "identifier" NERFIN YR "idenrifier" TILL exp {
+till_flow:  LOOP "identifier" INC  YR "identifier" TILL exp {}
+           | LOOP "identifier" DEC YR "idenrifier" TILL exp {
     // pass;
  };
 

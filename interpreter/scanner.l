@@ -74,7 +74,7 @@ blank [ \t\r]
 BTW.*\n         ; // comment
 
 {int}           return make_OBJECT(yytext, loc);
-{id}            return yy::parser::make_OBJECT(LolObject(yytext), loc);
+{id}            return yy::parser::make_IDENTIFIER(yytext, loc);
 
 .               {}; //throw yy::parser::syntax_error(loc, "invalid character: " + std::string(yytext)); }
 
@@ -88,5 +88,5 @@ yy::parser::symbol_type make_OBJECT(const std::string &s,
     if (! (INT_MIN <= n && n <= INT_MAX && errno != ERANGE)) {
         //throw yy::parser::syntax_error(loc, "integer is out of range: " + s);
     }
-    return yy::parser::make_OBJECT(LolObject((int) n), loc);
+    return yy::parser::make_NUMBER((int) n, loc);
 }
