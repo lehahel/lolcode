@@ -6,6 +6,7 @@ Driver::Driver() :
     trace_parsing(false),
     trace_scanning(false),
     scanner(*this), parser(scanner, *this) {
+    // pre defined vars
     variables["one"] = LolObject(1);
     variables["two"] = LolObject(2);
 }

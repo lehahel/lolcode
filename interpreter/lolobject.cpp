@@ -20,6 +20,10 @@ LOL_TYPE get_type(const std::string& str) {
     }
 }
 
+LOL_TYPE LolObject::val_type() const {
+    return type;
+}
+
 ///CONSTRUCTORS//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 LolObject::LolObject()           : type(NOOB),

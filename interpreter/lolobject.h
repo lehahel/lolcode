@@ -22,6 +22,8 @@ enum LOL_TYPE {
 class LolObject {
 public:
     LolObject();
+    LOL_TYPE val_type() const;
+
     explicit LolObject(const std::string& str);
     explicit LolObject(const char *str);
     explicit LolObject(double num);
@@ -62,7 +64,6 @@ public:
     friend std::ostream& operator<<(std::ostream& out, const LolObject& obj);
     friend std::istream& operator>>(std::istream& in, LolObject& obj);
 
-    friend int main();
     friend std::string gttp(LolObject x);
 
 private:

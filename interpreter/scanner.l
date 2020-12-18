@@ -65,6 +65,9 @@ blank [ \t\r]
 "TIL"           return yy::parser::make_TILL   (loc);
 "WILE"          return yy::parser::make_WHILE  (loc);
 
+"UPPIN"         return yy::parser::make_INC    (loc);
+"NERFIN"        return yy::parser::make_DEC    (loc);
+
 "("             return yy::parser::make_LPAREN (loc);
 ")"             return yy::parser::make_RPAREN (loc);
 
